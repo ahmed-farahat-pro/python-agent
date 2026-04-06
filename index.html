@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Agent Navigation - Research Project</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface-2: #242836;
+            --border: #2e3348;
+            --text: #e2e4ed;
+            --text-dim: #8b8fa8;
+            --accent: #6c8cff;
+            --accent-glow: rgba(108, 140, 255, 0.15);
+            --green: #4ade80;
+            --orange: #fb923c;
+            --red: #f87171;
+            --purple: #c084fc;
+            --cyan: #22d3ee;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes gridGlow {
+            0%, 100% { box-shadow: 0 0 5px var(--accent-glow); }
+            50% { box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(108, 140, 255, 0.05); }
+        }
+
+        @keyframes moveAgent {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(44px, 0); }
+            50% { transform: translate(44px, 44px); }
+            75% { transform: translate(0, 44px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes barGrow {
+            from { width: 0; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes borderTrace {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animate-on-scroll.from-left {
+            transform: translateX(-40px);
+        }
+        .animate-on-scroll.from-left.visible {
+            transform: translateX(0);
+        }
+
+        .animate-on-scroll.from-right {
+            transform: translateX(40px);
+        }
+        .animate-on-scroll.from-right.visible {
+            transform: translateX(0);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(108,140,255,0.08) 0%, transparent 60%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(108,140,255,0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            animation: slideDown 0.6s ease;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease;
+            max-width: 800px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-grid-demo {
+            position: relative;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        /* ===== GRID VISUALIZATION ===== */
+        .grid-container {
+            display: inline-grid;
+            gap: 4px;
+            padding: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            animation: gridGlow 4s ease-in-out infinite;
+        }
+
+        .grid-5x5 { grid-template-columns: repeat(5, 40px); }
+        .grid-6x4 { grid-template-columns: repeat(4, 40px); }
+
+        .grid-cell {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .grid-cell:hover {
+            transform: scale(1.1);
+            z-index: 2;
+        }
+
+        .cell-empty { background: var(--surface-2); border: 1px solid var(--border); }
+        .cell-wall { background: #374151; border: 1px solid #4b5563; color: #9ca3af; }
+        .cell-agent {
+            background: linear-gradient(135deg, var(--accent), #4f6fff);
+            border: 1px solid var(--accent);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(108,140,255,0.4);
+        }
+        .cell-resource {
+            background: linear-gradient(135deg, #059669, var(--green));
+            border: 1px solid var(--green);
+            color: white;
+        }
+        .cell-goal {
+            background: linear-gradient(135deg, #d97706, var(--orange));
+            border: 1px solid var(--orange);
+            color: white;
+        }
+        .cell-obstacle {
+            background: linear-gradient(135deg, #7c3aed, var(--purple));
+            border: 1px solid var(--purple);
+            color: white;
+        }
+
+        /* ===== NAV ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            background: rgba(15, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            animation: slideDown 0.5s ease;
+        }
+
+        .nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 6px 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav a:hover {
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        /* ===== SECTIONS ===== */
+        section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 4px 14px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(108,140,255,0.2);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: var(--accent);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        section h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        section .section-desc {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            margin-bottom: 3rem;
+            max-width: 700px;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(108,140,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p { color: var(--text-dim); }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ===== PHASE CARDS ===== */
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .phase-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--cyan));
+            background-size: 200% 100%;
+            animation: borderTrace 3s linear infinite;
+        }
+
+        .phase-card:hover {
+            border-color: rgba(108,140,255,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .phase-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.75rem;
+        }
+
+        .phase-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-card p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .phase-features {
+            list-style: none;
+        }
+
+        .phase-features li {
+            padding: 6px 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-features li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .rq-box {
+            margin-top: 1rem;
+            padding: 12px 16px;
+            background: var(--accent-glow);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: var(--text);
+        }
+
+        /* ===== ARCHITECTURE ===== */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .arch-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            min-width: 160px;
+            transition: all 0.3s ease;
+        }
+
+        .arch-box:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .arch-box h4 { font-size: 1rem; margin-bottom: 4px; }
+        .arch-box p { font-size: 0.8rem; color: var(--text-dim); }
+
+        .arch-arrow {
+            font-size: 1.5rem;
+            color: var(--accent);
+            padding: 0 0.75rem;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        /* ===== RESULTS ===== */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            line-height: 1;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-detail {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* ===== BAR CHART ===== */
+        .bar-chart {
+            margin: 2rem 0;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .bar-label {
+            width: 120px;
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 32px;
+            background: var(--surface-2);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            transition: width 1.5s ease;
+        }
+
+        .bar-fill.animate {
+            animation: barGrow 1.5s ease forwards;
+        }
+
+        /* ===== COMPARISON TABLE ===== */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: var(--surface-2);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .data-table tr:hover td {
+            background: var(--surface-2);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
+        .badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+        .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+        .badge-blue { background: rgba(108,140,255,0.15); color: var(--accent); }
+
+        /* ===== TIMELINE ===== */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--cyan), var(--green));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -33px;
+            top: 4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid var(--bg);
+            box-shadow: 0 0 10px rgba(108,140,255,0.4);
+        }
+
+        .timeline-item h4 {
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+
+        .timeline-item p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* ===== CODE BLOCK ===== */
+        .code-block {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .code-keyword { color: var(--purple); }
+        .code-class { color: var(--cyan); }
+        .code-string { color: var(--green); }
+        .code-comment { color: var(--text-dim); font-style: italic; }
+        .code-func { color: var(--accent); }
+
+        /* ===== GRID LEGEND ===== */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .legend-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        /* ===== AGENT SIM ===== */
+        .sim-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .sim-agent {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent), #4f6fff);
+            box-shadow: 0 0 12px rgba(108,140,255,0.5);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            animation: moveAgent 4s ease-in-out infinite;
+        }
+
+        /* ===== FILE TREE ===== */
+        .file-tree {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 2;
+        }
+
+        .file-tree .folder { color: var(--accent); }
+        .file-tree .file { color: var(--text-dim); }
+        .file-tree .desc { color: var(--text-dim); opacity: 0.6; font-style: italic; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav { gap: 0.5rem; padding: 0.75rem 1rem; flex-wrap: wrap; }
+            .nav a { font-size: 0.8rem; padding: 4px 10px; }
+            section { padding: 3rem 1rem; }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+            .bar-label { width: 80px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#phases">Phases</a>
+    <a href="#implementation">Implementation</a>
+    <a href="#results">Results</a>
+    <a href="#conclusion">Conclusion</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+    <div class="hero-badge">Research Project</div>
+    <h1>Intelligent Agent <span>Navigation</span> in Discrete Environments</h1>
+    <p>Modelling autonomous decision-making through grid worlds, memory-guided exploration, and hierarchical control under uncertainty.</p>
+
+    <div class="hero-grid-demo">
+        <div class="grid-container grid-5x5">
+            <div class="grid-cell cell-agent">A</div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-wall">#</div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-resource">R</div>
+
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-wall">#</div>
+            <div class="grid-cell cell-empty"></div>
+
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-wall">#</div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-wall">#</div>
+            <div class="grid-cell cell-resource">R</div>
+
+            <div class="grid-cell cell-resource">R</div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-wall">#</div>
+            <div class="grid-cell cell-empty"></div>
+            <div class="grid-cell cell-goal">G</div>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-swatch" style="background: linear-gradient(135deg, var(--accent), #4f6fff);"></div> Agent</div>
+            <div class="legend-item"><div class="legend-swatch" style="background: #374151;"></div> Wall</div>
+            <div class="legend-item"><div class="legend-swatch" style="background: linear-gradient(135deg, #059669, var(--green));"></div> Resource</div>
+            <div class="legend-item"><div class="legend-swatch" style="background: linear-gradient(135deg, #d97706, var(--orange));"></div> Goal</div>
+            <div class="legend-item"><div class="legend-swatch" style="background: var(--surface-2); border: 1px solid var(--border);"></div> Empty</div>
+        </div>
+    </div>
+</header>
+
+<!-- OVERVIEW -->
+<section id="overview">
+    <div class="animate-on-scroll">
+        <span class="section-label">Overview</span>
+        <h2>Problem Formulation</h2>
+        <p class="section-desc">An autonomous indoor service robot operates in a building represented as a grid-based map. It must navigate rooms and corridors, collect resources, avoid obstacles, reach a designated goal, and manage limited energy.</p>
+    </div>
+
+    <div class="phase-grid">
+        <div class="card animate-on-scroll" style="transition-delay: 0.1s;">
+            <h3><div class="card-icon" style="background: var(--accent-glow); color: var(--accent);">1</div> Real-World Mapping</h3>
+            <p>Grid cells represent rooms and corridors. Walls model physical barriers. Resources stand in for packages, food, or data points. The goal represents a charging station or exit.</p>
+        </div>
+        <div class="card animate-on-scroll" style="transition-delay: 0.2s;">
+            <h3><div class="card-icon" style="background: rgba(74,222,128,0.15); color: var(--green);">2</div> Core Challenges</h3>
+            <p>The agent must sense its surroundings, avoid or interact with obstacles, make decisions under uncertainty, and optimise objectives such as time, energy, and reward.</p>
+        </div>
+        <div class="card animate-on-scroll" style="transition-delay: 0.3s;">
+            <h3><div class="card-icon" style="background: rgba(251,146,60,0.15); color: var(--orange);">3</div> Progressive Complexity</h3>
+            <p>Three phases build from reactive movement to memory-guided planning to hierarchical decision-making with stochastic actions and energy constraints.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+    <div class="animate-on-scroll">
+        <span class="section-label">System Design</span>
+        <h2>Architecture</h2>
+        <p class="section-desc">The system follows a modular, object-oriented design where the environment, agent, and controller are cleanly separated.</p>
+    </div>
+
+    <div class="arch-flow animate-on-scroll">
+        <div class="arch-box">
+            <h4>Environment</h4>
+            <p>Grid, cells, boundaries</p>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-box">
+            <h4>Sense</h4>
+            <p>Perceive neighbours</p>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-box">
+            <h4>Decide</h4>
+            <p>Controller logic</p>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-box">
+            <h4>Act</h4>
+            <p>Move, collect, push</p>
+        </div>
+        <div class="arch-arrow">&#8594;</div>
+        <div class="arch-box">
+            <h4>Update</h4>
+            <p>Energy, memory, stats</p>
+        </div>
+    </div>
+
+    <div class="animate-on-scroll" style="margin-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Project Structure</h3>
+        <div class="file-tree">
+            <span class="folder">Maya_Project_python/</span><br>
+            &nbsp;&nbsp;<span class="file">config.py</span> <span class="desc">-- cell types, grid layouts, constants</span><br>
+            &nbsp;&nbsp;<span class="file">utils.py</span> <span class="desc">-- BFS pathfinding, distance helpers</span><br>
+            &nbsp;&nbsp;<span class="file">environment.py</span> <span class="desc">-- GridEnvironment class</span><br>
+            &nbsp;&nbsp;<span class="file">agent.py</span> <span class="desc">-- ReactiveAgent, MemoryAgent, HierarchicalAgent</span><br>
+            &nbsp;&nbsp;<span class="file">controllers.py</span> <span class="desc">-- Explorer, Reactive, Deliberative, Hierarchical</span><br>
+            &nbsp;&nbsp;<span class="file">mst.py</span> <span class="desc">-- Prim's MST + MSTAgent</span><br>
+            &nbsp;&nbsp;<span class="file">experiments.py</span> <span class="desc">-- ExperimentRunner (7 experiments)</span><br>
+            &nbsp;&nbsp;<span class="file">visualizer.py</span> <span class="desc">-- terminal + matplotlib plots</span><br>
+            &nbsp;&nbsp;<span class="file">main.py</span> <span class="desc">-- entry point: runs all phases</span><br>
+            &nbsp;&nbsp;<span class="folder">results/</span> <span class="desc">-- generated .png plots</span>
+        </div>
+    </div>
+
+    <div class="animate-on-scroll" style="margin-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Agent Inheritance Chain</h3>
+        <div class="code-block">
+            <span class="code-label">Python</span>
+<span class="code-keyword">class</span> <span class="code-class">ReactiveAgent</span>:          <span class="code-comment"># Phase 1: random valid moves</span>
+    <span class="code-keyword">def</span> <span class="code-func">sense</span>() -> percept
+    <span class="code-keyword">def</span> <span class="code-func">choose_action</span>(percept) -> direction
+    <span class="code-keyword">def</span> <span class="code-func">act</span>(direction) -> event
+
+<span class="code-keyword">class</span> <span class="code-class">MemoryAgent</span>(<span class="code-class">ReactiveAgent</span>):  <span class="code-comment"># Phase 2: + visited set, candidate edges</span>
+    <span class="code-keyword">def</span> <span class="code-func">choose_action</span>()  <span class="code-comment"># prefers unvisited cells, BFS to frontier</span>
+
+<span class="code-keyword">class</span> <span class="code-class">HierarchicalAgent</span>(<span class="code-class">MemoryAgent</span>):  <span class="code-comment"># Phase 3: + energy, noise, controller</span>
+    <span class="code-keyword">def</span> <span class="code-func">act</span>()  <span class="code-comment"># stochastic noise, energy management</span>
+        </div>
+    </div>
+</section>
+
+<!-- PHASES -->
+<section id="phases">
+    <div class="animate-on-scroll">
+        <span class="section-label">Research Phases</span>
+        <h2>Three Phases of Development</h2>
+        <p class="section-desc">Each phase introduces new capabilities, building from simple reflexes to intelligent planning.</p>
+    </div>
+
+    <div class="phase-grid">
+        <div class="phase-card animate-on-scroll from-left" style="transition-delay: 0.1s;">
+            <div class="phase-number">01</div>
+            <h3>Reactive Navigation</h3>
+            <p>Baseline agent navigating with deterministic rules and random movement.</p>
+            <ul class="phase-features">
+                <li>Discrete grid representation (5x5, 6x4)</li>
+                <li>Explicit agent position tracking</li>
+                <li>Three boundary modes: wall, bouncy, wrap</li>
+                <li>Random direction selection</li>
+                <li>Step and coverage statistics</li>
+            </ul>
+            <div class="rq-box">How do different boundary conditions affect agent reachability and navigation efficiency?</div>
+        </div>
+
+        <div class="phase-card animate-on-scroll" style="transition-delay: 0.2s;">
+            <div class="phase-number">02</div>
+            <h3>Object Interaction & Planning</h3>
+            <p>Memory-guided exploration with obstacle pushing and MST-based planning.</p>
+            <ul class="phase-features">
+                <li>OOP-based agent design (inheritance)</li>
+                <li>Visited-cell memory and frontier tracking</li>
+                <li>Movable obstacle interaction (push)</li>
+                <li>Candidate edge exploration strategy</li>
+                <li>MST agent using Prim's algorithm</li>
+            </ul>
+            <div class="rq-box">How does agent memory improve navigation efficiency and decision quality?</div>
+        </div>
+
+        <div class="phase-card animate-on-scroll from-right" style="transition-delay: 0.3s;">
+            <div class="phase-number">03</div>
+            <h3>Perception, Hierarchy & Learning</h3>
+            <p>Hierarchical controllers with energy management under stochastic uncertainty.</p>
+            <ul class="phase-features">
+                <li>Perception-action loop with enhanced sensing</li>
+                <li>Four controller strategies compared</li>
+                <li>Two-level hierarchical decision-making</li>
+                <li>Stochastic action noise (0% - 30%)</li>
+                <li>Energy budget with depletion and restoration</li>
+            </ul>
+            <div class="rq-box">What is the impact of hierarchical decision-making on agent performance under uncertainty?</div>
+        </div>
+    </div>
+</section>
+
+<!-- IMPLEMENTATION DETAILS -->
+<section id="implementation">
+    <div class="animate-on-scroll">
+        <span class="section-label">Implementation</span>
+        <h2>Key Implementation Details</h2>
+        <p class="section-desc">Step-by-step walkthrough of the core algorithms and design decisions.</p>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item animate-on-scroll from-left">
+            <div class="timeline-dot"></div>
+            <h4>Step 1 &mdash; Grid Environment</h4>
+            <p>A 2D grid of CellType enums with configurable dimensions and boundary modes. The environment owns all state: agent position, resource locations, obstacle positions. Three boundary handlers determine what happens when the agent tries to step off the edge.</p>
+            <div class="code-block" style="margin-top: 1rem;">
+                <span class="code-label">Boundary Logic</span>
+<span class="code-comment"># Wall mode: reject out-of-bounds moves</span>
+<span class="code-keyword">if</span> mode == <span class="code-string">'wall'</span>: <span class="code-keyword">return</span> (False, current_pos, <span class="code-string">'blocked'</span>)
+
+<span class="code-comment"># Bouncy mode: reverse direction on boundary</span>
+<span class="code-keyword">if</span> mode == <span class="code-string">'bouncy'</span>: new_dir = opposite(direction)
+
+<span class="code-comment"># Wrap mode: toroidal arithmetic</span>
+<span class="code-keyword">if</span> mode == <span class="code-string">'wrap'</span>: nr, nc = nr % rows, nc % cols
+            </div>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-right">
+            <div class="timeline-dot"></div>
+            <h4>Step 2 &mdash; Reactive Agent</h4>
+            <p>The simplest agent. Each step it senses adjacent cells, filters for valid (non-wall) directions, and picks one at random. It records visited cells, action counts, and resource pickups for later analysis.</p>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-left">
+            <div class="timeline-dot"></div>
+            <h4>Step 3 &mdash; Memory Agent with Candidate Edges</h4>
+            <p>Maintains a <strong>visited</strong> set and a <strong>candidate edges</strong> frontier. On each move, it prefers to step into an unvisited neighbour. When all neighbours are visited, it uses BFS to navigate back to the nearest frontier cell, ensuring systematic coverage instead of aimless wandering.</p>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-right">
+            <div class="timeline-dot"></div>
+            <h4>Step 4 &mdash; MST Planning Agent</h4>
+            <p>Before moving, computes a Minimum Spanning Tree over all resource positions plus the goal using Prim's algorithm with Manhattan-distance edge weights. A DFS traversal of the MST produces an efficient visitation order. The agent follows this plan using BFS grid pathfinding between nodes.</p>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-left">
+            <div class="timeline-dot"></div>
+            <h4>Step 5 &mdash; Four Controllers</h4>
+            <p>Controller objects are plugged into the hierarchical agent, cleanly separating strategy from mechanics:</p>
+            <table class="data-table" style="margin-top: 1rem;">
+                <tr><th>Controller</th><th>Strategy</th></tr>
+                <tr><td>Explorer</td><td>Picks from all 4 directions (may hit walls)</td></tr>
+                <tr><td>Reactive</td><td>Picks from valid directions only</td></tr>
+                <tr><td>Deliberative</td><td>BFS shortest path to goal</td></tr>
+                <tr><td>Hierarchical</td><td>Two-level: strategy selector + navigator</td></tr>
+            </table>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-right">
+            <div class="timeline-dot"></div>
+            <h4>Step 6 &mdash; Hierarchical Decision-Making</h4>
+            <p>The high level selects a sub-goal based on the agent's state. If energy is low, it switches to <strong>survival mode</strong> and heads for the goal. If resources are within reach and energy permits, it enters <strong>gather mode</strong>. Otherwise, it <strong>explores</strong> unvisited cells. The low level navigates toward the chosen sub-goal using BFS with greedy fallback.</p>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-left">
+            <div class="timeline-dot"></div>
+            <h4>Step 7 &mdash; Stochastic Noise & Energy</h4>
+            <p>Each action has a configurable probability of deviating to a perpendicular direction, simulating real actuator imprecision. Energy depletes by 1 per step and is partially restored (+10) when collecting a resource. The episode ends if energy reaches zero before the goal is reached.</p>
+        </div>
+
+        <div class="timeline-item animate-on-scroll from-right">
+            <div class="timeline-dot"></div>
+            <h4>Step 8 &mdash; Experiments & Plots</h4>
+            <p>Seven experiments run 50 episodes each with deterministic seeding. Metrics include coverage, goal rate, revisit ratio, resources collected, energy remaining, and total reward. Ten matplotlib plots are generated automatically in the <code>results/</code> directory.</p>
+        </div>
+    </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+    <div class="animate-on-scroll">
+        <span class="section-label">Findings</span>
+        <h2>Experimental Results</h2>
+        <p class="section-desc">Key findings across all three phases, based on 50 episodes per condition.</p>
+    </div>
+
+    <!-- Phase 1 Results -->
+    <div class="card animate-on-scroll">
+        <h3>Phase 1: Boundary Mode Comparison</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <div class="bar-label">Wall</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 78.7%; background: linear-gradient(90deg, #2196F3, #64B5F6);">78.7%</div></div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Bouncy</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 75.5%; background: linear-gradient(90deg, #4CAF50, #81C784);">75.5%</div></div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Wrap</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 45.6%; background: linear-gradient(90deg, #FF9800, #FFB74D);">45.6%</div></div>
+            </div>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.9rem;">Coverage (%) on 5x5 grid over 200 steps. Wall mode achieves highest coverage; wrap-around creates shortcuts that reduce exploration but guarantee reaching the goal (100% goal rate).</p>
+    </div>
+
+    <!-- Phase 2 Results -->
+    <div class="card animate-on-scroll">
+        <h3>Phase 2: Revisit Ratio by Agent Type</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <div class="bar-label">Reactive</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 80.6%; background: linear-gradient(90deg, #f87171, #fca5a5);">80.6%</div></div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">Memory</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 15.6%; background: linear-gradient(90deg, #4CAF50, #81C784);">15.6%</div></div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">MST</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 16.7%; background: linear-gradient(90deg, #FF9800, #FFB74D);">16.7%</div></div>
+            </div>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.9rem;">Memory reduces wasted steps by 5x. The reactive agent revisits cells on 81% of its steps, while memory-based agents achieve under 17%.</p>
+    </div>
+
+    <!-- Phase 3 Results -->
+    <div class="animate-on-scroll">
+        <h3 style="margin-bottom: 1.5rem;">Phase 3: Controller Performance</h3>
+    </div>
+    <div class="results-grid">
+        <div class="result-card animate-on-scroll" style="transition-delay: 0.1s;">
+            <div class="result-label">Explorer</div>
+            <div class="result-value" style="color: var(--red);">8%</div>
+            <div class="result-detail">Goal Rate &middot; 10 Reward</div>
+        </div>
+        <div class="result-card animate-on-scroll" style="transition-delay: 0.2s;">
+            <div class="result-label">Reactive</div>
+            <div class="result-value" style="color: var(--orange);">20%</div>
+            <div class="result-detail">Goal Rate &middot; 19 Reward</div>
+        </div>
+        <div class="result-card animate-on-scroll" style="transition-delay: 0.3s;">
+            <div class="result-label">Deliberative</div>
+            <div class="result-value" style="color: var(--accent);">100%</div>
+            <div class="result-detail">Goal Rate &middot; 60 Reward</div>
+        </div>
+        <div class="result-card animate-on-scroll" style="transition-delay: 0.4s;">
+            <div class="result-label">Hierarchical</div>
+            <div class="result-value" style="color: var(--green);">100%</div>
+            <div class="result-detail">Goal Rate &middot; 80 Reward</div>
+        </div>
+    </div>
+
+    <!-- Noise Table -->
+    <div class="card animate-on-scroll" style="margin-top: 1.5rem;">
+        <h3>Noise Sensitivity (Goal Reached Rate %)</h3>
+        <table class="data-table">
+            <tr>
+                <th>Controller</th>
+                <th>Noise 0%</th>
+                <th>Noise 10%</th>
+                <th>Noise 20%</th>
+                <th>Noise 30%</th>
+            </tr>
+            <tr>
+                <td>Explorer</td>
+                <td><span class="badge badge-red">14%</span></td>
+                <td><span class="badge badge-red">8%</span></td>
+                <td><span class="badge badge-red">4%</span></td>
+                <td><span class="badge badge-red">8%</span></td>
+            </tr>
+            <tr>
+                <td>Reactive</td>
+                <td><span class="badge badge-orange">28%</span></td>
+                <td><span class="badge badge-orange">20%</span></td>
+                <td><span class="badge badge-orange">32%</span></td>
+                <td><span class="badge badge-orange">26%</span></td>
+            </tr>
+            <tr>
+                <td>Deliberative</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+            <tr>
+                <td>Hierarchical</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+        </table>
+        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.75rem;">Deliberative and Hierarchical controllers remain at 100% across all noise levels, while random-based controllers degrade. The Hierarchical controller additionally collects all resources for maximum reward.</p>
+    </div>
+
+    <!-- Energy Budget -->
+    <div class="card animate-on-scroll" style="margin-top: 1.5rem;">
+        <h3>Energy Budget Impact (Hierarchical Controller)</h3>
+        <table class="data-table">
+            <tr><th>Starting Energy</th><th>Goal Rate</th><th>Resources</th><th>Survived</th></tr>
+            <tr>
+                <td>30</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td>3.0</td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+            <tr>
+                <td>50</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td>3.0</td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+            <tr>
+                <td>75</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td>3.0</td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+            <tr>
+                <td>100</td>
+                <td><span class="badge badge-green">100%</span></td>
+                <td>3.0</td>
+                <td><span class="badge badge-green">100%</span></td>
+            </tr>
+        </table>
+        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.75rem;">The hierarchical strategy efficiently manages even tight energy budgets (30 units) by collecting resources for energy boosts and switching to survival mode when reserves run low.</p>
+    </div>
+</section>
+
+<!-- CONCLUSION -->
+<section id="conclusion">
+    <div class="animate-on-scroll">
+        <span class="section-label">Conclusion</span>
+        <h2>Key Takeaways</h2>
+        <p class="section-desc">Summary of findings linking all three research questions to experimental evidence.</p>
+    </div>
+
+    <div class="phase-grid">
+        <div class="card animate-on-scroll from-left" style="transition-delay: 0.1s;">
+            <h3><div class="card-icon" style="background: rgba(108,140,255,0.15); color: var(--accent);">1</div> Boundary Conditions Matter</h3>
+            <p>Wall mode yields the highest coverage (79%) for random agents. Wrap-around creates topological shortcuts that guarantee goal attainment at the cost of thorough exploration.</p>
+        </div>
+        <div class="card animate-on-scroll" style="transition-delay: 0.2s;">
+            <h3><div class="card-icon" style="background: rgba(74,222,128,0.15); color: var(--green);">2</div> Memory Eliminates Waste</h3>
+            <p>Agent memory reduces the revisit ratio from 81% to 16%, a five-fold improvement. The MST agent guarantees efficient resource collection through global planning.</p>
+        </div>
+        <div class="card animate-on-scroll from-right" style="transition-delay: 0.3s;">
+            <h3><div class="card-icon" style="background: rgba(251,146,60,0.15); color: var(--orange);">3</div> Hierarchy Enables Robustness</h3>
+            <p>The hierarchical controller achieves 100% goal rate and maximum reward across all noise levels and energy budgets. Strategy switching between gather, explore, and survive modes is the key differentiator.</p>
+        </div>
+    </div>
+
+    <div class="card animate-on-scroll" style="margin-top: 2rem;">
+        <h3>Future Work</h3>
+        <p>Reinforcement learning for adaptive threshold tuning. Multi-agent coordination for collaborative resource gathering. Larger, procedurally generated maps to stress-test scalability. A* heuristic pathfinding for efficiency on bigger grids.</p>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>Intelligent Agent Navigation and Decision-Making in Discrete Environments</p>
+    <p style="margin-top: 0.5rem;">Research Project &middot; Python &middot; Grid Worlds &middot; Agent-Based AI</p>
+</footer>
+
+<!-- SCROLL ANIMATION SCRIPT -->
+<script>
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('.nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Animate bar fills when they come into view
+    const barObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const fills = entry.target.querySelectorAll('.bar-fill');
+                fills.forEach((fill, i) => {
+                    const targetWidth = fill.style.width;
+                    fill.style.width = '0';
+                    setTimeout(() => {
+                        fill.style.width = targetWidth;
+                    }, 200 + i * 200);
+                });
+                barObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.bar-chart').forEach(chart => {
+        barObserver.observe(chart);
+    });
+
+    // Counter animation for result values
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const text = el.textContent;
+                const match = text.match(/(\d+)/);
+                if (match) {
+                    const target = parseInt(match[1]);
+                    const suffix = text.replace(match[1], '');
+                    let current = 0;
+                    const step = Math.max(1, Math.floor(target / 30));
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        el.textContent = current + suffix;
+                    }, 30);
+                }
+                counterObserver.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.result-value').forEach(el => {
+        counterObserver.observe(el);
+    });
+</script>
+</body>
+</html>
