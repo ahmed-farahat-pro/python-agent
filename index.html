@@ -766,6 +766,50 @@
             text-decoration: none;
         }
 
+        /* ===== PLOT IMAGES ===== */
+        .plot-container {
+            margin: 1.5rem 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: all 0.4s ease;
+        }
+
+        .plot-container:hover {
+            border-color: rgba(108,140,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .plot-container img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .plot-caption {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .plot-caption strong {
+            color: var(--text);
+        }
+
+        .plot-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .plot-pair { grid-template-columns: 1fr; }
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .nav { gap: 0.5rem; padding: 0.75rem 1rem; flex-wrap: wrap; }
@@ -1069,48 +1113,60 @@
         <p class="section-desc">Key findings across all three phases, based on 50 episodes per condition.</p>
     </div>
 
-    <!-- Phase 1 Results -->
-    <div class="card animate-on-scroll">
-        <h3>Phase 1: Boundary Mode Comparison</h3>
-        <div class="bar-chart">
-            <div class="bar-row">
-                <div class="bar-label">Wall</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 78.7%; background: linear-gradient(90deg, #2196F3, #64B5F6);">78.7%</div></div>
-            </div>
-            <div class="bar-row">
-                <div class="bar-label">Bouncy</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 75.5%; background: linear-gradient(90deg, #4CAF50, #81C784);">75.5%</div></div>
-            </div>
-            <div class="bar-row">
-                <div class="bar-label">Wrap</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 45.6%; background: linear-gradient(90deg, #FF9800, #FFB74D);">45.6%</div></div>
-            </div>
-        </div>
-        <p style="color: var(--text-dim); font-size: 0.9rem;">Coverage (%) on 5x5 grid over 200 steps. Wall mode achieves highest coverage; wrap-around creates shortcuts that reduce exploration but guarantee reaching the goal (100% goal rate).</p>
-    </div>
-
-    <!-- Phase 2 Results -->
-    <div class="card animate-on-scroll">
-        <h3>Phase 2: Revisit Ratio by Agent Type</h3>
-        <div class="bar-chart">
-            <div class="bar-row">
-                <div class="bar-label">Reactive</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 80.6%; background: linear-gradient(90deg, #f87171, #fca5a5);">80.6%</div></div>
-            </div>
-            <div class="bar-row">
-                <div class="bar-label">Memory</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 15.6%; background: linear-gradient(90deg, #4CAF50, #81C784);">15.6%</div></div>
-            </div>
-            <div class="bar-row">
-                <div class="bar-label">MST</div>
-                <div class="bar-track"><div class="bar-fill" style="width: 16.7%; background: linear-gradient(90deg, #FF9800, #FFB74D);">16.7%</div></div>
-            </div>
-        </div>
-        <p style="color: var(--text-dim); font-size: 0.9rem;">Memory reduces wasted steps by 5x. The reactive agent revisits cells on 81% of its steps, while memory-based agents achieve under 17%.</p>
-    </div>
-
-    <!-- Phase 3 Results -->
+    <!-- ============================================ -->
+    <!-- PHASE 1 RESULTS                              -->
+    <!-- ============================================ -->
     <div class="animate-on-scroll">
+        <h3 style="margin-bottom: 1rem;">Phase 1: Boundary Mode Comparison</h3>
+    </div>
+
+    <!-- Figure 1 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p1_coverage_by_boundary.png" alt="Coverage by Boundary Mode">
+        <div class="plot-caption"><strong>Figure 1 &mdash; Grid Coverage by Boundary Mode.</strong> Mean coverage across 50 episodes on the 5x5 grid. Wall mode confines the agent and produces the highest local coverage (78.7%). Bouncy mode is slightly lower (75.5%) because reflections occasionally push the agent away from productive directions. Wrap-around mode drops to 45.6% because the toroidal topology scatters the agent across distant regions rather than filling in nearby gaps. Error bars show one standard deviation.</div>
+    </div>
+
+    <!-- Figure 2 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p1_coverage_over_time.png" alt="Coverage Over Time">
+        <div class="plot-caption"><strong>Figure 2 &mdash; Coverage Over Time.</strong> Average coverage plotted step-by-step for each boundary mode. Wall and bouncy modes show a steady upward curve that begins to plateau around step 100 as fewer unvisited cells remain. Wrap-around coverage plateaus much earlier at roughly 45%, confirming that the toroidal short-cuts cause the agent to revisit distant regions instead of methodically exploring its neighbourhood.</div>
+    </div>
+
+    <!-- Figure 3 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p1_grid_size_comparison.png" alt="Grid Size Comparison">
+        <div class="plot-caption"><strong>Figure 3 &mdash; Performance by Grid Size.</strong> Coverage and goal-reached rate compared between the 5x5 and 6x4 grids using wall boundaries. The 6x4 layout's narrower corridors funnel the random agent toward the goal more reliably (92% vs 72%), while overall coverage is comparable between both layouts (79&ndash;81%).</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PHASE 2 RESULTS                              -->
+    <!-- ============================================ -->
+    <div class="animate-on-scroll" style="margin-top: 3rem;">
+        <h3 style="margin-bottom: 1rem;">Phase 2: Memory and Planning</h3>
+    </div>
+
+    <!-- Figure 4 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p2_agent_comparison.png" alt="Agent Comparison">
+        <div class="plot-caption"><strong>Figure 4 &mdash; Resources Collected and Goal Rate by Agent Type.</strong> Both Memory and MST agents reach the goal in 100% of episodes compared to only 84% for the Reactive agent. The Reactive agent collects slightly more resources on average (2.2) because it wanders longer and stumbles onto them, but at the cost of far more steps and lower reliability.</div>
+    </div>
+
+    <!-- Figure 5 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p2_revisit_ratio.png" alt="Revisit Ratio">
+        <div class="plot-caption"><strong>Figure 5 &mdash; Revisit Ratio by Agent Type.</strong> The Reactive agent wastes 80.6% of its moves revisiting cells it has already visited. Memory-based agents reduce this to under 17%, a five-fold improvement in navigation efficiency that clearly demonstrates the value of maintaining a visited-cell frontier and candidate-edge exploration strategy.</div>
+    </div>
+
+    <!-- Figure 6 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p2_obstacle_impact.png" alt="Obstacle Impact">
+        <div class="plot-caption"><strong>Figure 6 &mdash; Obstacle Impact on Memory Agent.</strong> With zero obstacles the Memory agent reaches the goal in 100% of episodes using only ~15 steps. Adding 2 movable obstacles causes steps to spike to ~248 and the goal rate to drop to 18%. With 4 obstacles the situation deteriorates further (8% goal rate), as pushed obstacles frequently block the only available paths through the grid.</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PHASE 3 RESULTS                              -->
+    <!-- ============================================ -->
+    <div class="animate-on-scroll" style="margin-top: 3rem;">
         <h3 style="margin-bottom: 1.5rem;">Phase 3: Controller Performance</h3>
     </div>
     <div class="results-grid">
@@ -1134,6 +1190,18 @@
             <div class="result-value" style="color: var(--green);">100%</div>
             <div class="result-detail">Goal Rate &middot; 80 Reward</div>
         </div>
+    </div>
+
+    <!-- Figure 7 -->
+    <div class="plot-container animate-on-scroll" style="margin-top: 1.5rem;">
+        <img src="results/p3_controller_comparison.png" alt="Controller Comparison">
+        <div class="plot-caption"><strong>Figure 7 &mdash; Controller Performance Comparison (noise = 0.1).</strong> The Hierarchical controller dominates all three metrics: 100% success rate, 3.0 resources collected, and 80 total reward. The Deliberative controller reaches the goal reliably but only collects 1 resource (60 reward) because it ignores resource gathering. Explorer and Reactive controllers fail most episodes due to energy depletion.</div>
+    </div>
+
+    <!-- Figure 8 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p3_noise_sensitivity.png" alt="Noise Sensitivity">
+        <div class="plot-caption"><strong>Figure 8 &mdash; Success Rate by Controller and Noise Level.</strong> The Explorer and Reactive controllers hover between 4&ndash;32% regardless of noise, since their random strategies are inherently unreliable. Deliberative and Hierarchical controllers maintain a perfect 100% at every noise level (0% to 30%), demonstrating that BFS-based pathfinding is fully robust against stochastic action deviation on this grid size.</div>
     </div>
 
     <!-- Noise Table -->
@@ -1176,12 +1244,23 @@
                 <td><span class="badge badge-green">100%</span></td>
             </tr>
         </table>
-        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.75rem;">Deliberative and Hierarchical controllers remain at 100% across all noise levels, while random-based controllers degrade. The Hierarchical controller additionally collects all resources for maximum reward.</p>
     </div>
 
-    <!-- Energy Budget -->
+    <!-- Figure 9 -->
+    <div class="plot-container animate-on-scroll" style="margin-top: 1.5rem;">
+        <img src="results/p3_energy_over_time.png" alt="Energy Over Time">
+        <div class="plot-caption"><strong>Figure 9 &mdash; Energy Over Time by Controller Type.</strong> Explorer energy drops fastest, reaching near-zero by step 60. Reactive follows a similar but slightly slower decline. Deliberative energy stabilises at ~49 because the agent reaches the goal within a few steps and stops consuming energy. Hierarchical energy dips during the initial resource-gathering phase then levels off at ~41, reflecting the energy restored by collecting all three resources before heading to the goal.</div>
+    </div>
+
+    <!-- Figure 10 -->
+    <div class="plot-container animate-on-scroll">
+        <img src="results/p3_energy_budget.png" alt="Energy Budget Impact">
+        <div class="plot-caption"><strong>Figure 10 &mdash; Energy Budget Impact (Hierarchical Controller).</strong> The controller achieves 100% goal rate and collects all 3 resources regardless of whether it starts with 30, 50, 75, or 100 energy units. This confirms that the hierarchical strategy's energy management is efficient enough to operate even under tight constraints, thanks to its ability to restore energy through resource collection and switch to survival mode when reserves run low.</div>
+    </div>
+
+    <!-- Energy Budget Table -->
     <div class="card animate-on-scroll" style="margin-top: 1.5rem;">
-        <h3>Energy Budget Impact (Hierarchical Controller)</h3>
+        <h3>Energy Budget Summary (Hierarchical Controller)</h3>
         <table class="data-table">
             <tr><th>Starting Energy</th><th>Goal Rate</th><th>Resources</th><th>Survived</th></tr>
             <tr>
@@ -1209,7 +1288,6 @@
                 <td><span class="badge badge-green">100%</span></td>
             </tr>
         </table>
-        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.75rem;">The hierarchical strategy efficiently manages even tight energy budgets (30 units) by collecting resources for energy boosts and switching to survival mode when reserves run low.</p>
     </div>
 </section>
 
