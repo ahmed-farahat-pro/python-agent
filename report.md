@@ -20,9 +20,96 @@ For Phase 3, the hierarchical agent adds an energy attribute that decreases by 1
 
 2.3 Experimental Setup
 
-Each experimental condition was repeated 50 times with deterministic seeding to ensure reproducibility. A base random seed of forty-two was offset by the episode number so that every agent type faced the same sequence of random settings within a given experiment. Phase 1 episodes ran for up to 200 steps, Phase 2 for 300, and Phase 3 for 500. The metrics recorded per episode included the number of steps taken, whether the goal was reached, the count of resources collected, the fraction of non-wall cells visited, which is referred to as coverage, the revisit ratio defined as the number of steps landing on an already-visited cell divided by total steps, and, for Phase 3, the remaining energy and cumulative reward. Summary statistics report the arithmetic mean and sample standard deviation across episodes.
+Each experimental condition was repeated 50 times with deterministic seeding to ensure reproducibility. A base random seed of forty-two was offset by the episode number so that every agent type faced the same sequence of random settings within a given experiment. Phase 1 episodes ran for up to 200 steps, Phase 2 for 300, and Phase 3 for 500. The metrics recorded per episode included the number of steps taken, whether the goal was reached, the count of resources collected, the fraction of non-wall cells visited, which is referred to as coverage, the revisit ratio defined as the number of steps landing on an already-visited cell divided by total steps, and, for Phase 3, the remaining energy and cumulative reward. Summary statistics report the arithmetic mean and sample standard deviation across episodes. Tabulated means and standard deviations for experiments E1–E5 are collected in Section 3.5.
 
 3. Results
+
+3.0 Path traces (qualitative output)
+
+In addition to the quantitative plots below, each run of the simulation records an action history. The following excerpts use the project’s default 5x5 layout (`config.GRID_5x5`), wall boundaries, and random seed **42**. Cell symbols: **.** empty, **#** wall, **A** agent, **G** goal, **R** resource. Move labels map internal directions to compass names (**NORTH**, **SOUTH**, **EAST**, **WEST**). When the agent stands on the goal, the grid shows **A** on that cell.
+
+**DeliberativeController** (HierarchicalAgent, noise 0, energy 100): shortest-path–style run to the goal in eight steps.
+
+*Summary:* DeliberativeController, deterministic (noise=0), seed=42. Steps: 8, goal_reached=True.
+
+Initial grid:
+
+```
+A . # . R
+. . . # .
+. # . . .
+. . . # R
+R . # . G
+```
+
+Step-by-step movement:
+
+```
+Step 1: Move SOUTH
+Step 2: Move EAST
+Step 3: Move EAST
+Step 4: Move SOUTH
+Step 5: Move EAST
+Step 6: Move EAST
+Step 7: Move SOUTH
+Step 8: Move SOUTH
+```
+
+Final grid:
+
+```
+. . # . R
+. . . # .
+. # . . .
+. . . # .
+R . # . A
+```
+
+**ReactiveAgent** (Phase 1 baseline, first 15 steps only; goal not necessarily reached).
+
+*Summary:* ReactiveAgent, first 15 steps, seed=42. goal_reached=False.
+
+Initial grid (same as above):
+
+```
+A . # . R
+. . . # .
+. # . . .
+. . . # R
+R . # . G
+```
+
+Step-by-step movement:
+
+```
+Step 1: Move SOUTH
+Step 2: Move NORTH
+Step 3: Move EAST
+Step 4: Move SOUTH
+Step 5: Move NORTH
+Step 6: Move SOUTH
+Step 7: Move EAST
+Step 8: Move SOUTH
+Step 9: Move EAST
+Step 10: Move WEST
+Step 11: Move EAST
+Step 12: Move EAST
+Step 13: Move NORTH
+Step 14: Move NORTH
+Step 15: Move SOUTH
+```
+
+Final grid after step 15:
+
+```
+. . # . .
+. . . # A
+. # . . .
+. . . # R
+R . # . G
+```
+
+*Compiled output:* The same traces (regenerated on each `python3 main.py`) appear in **`results.html`**, together with embedded copies of all figures listed in §3.1–3.3.
 
 3.1 Phase 1: Boundary Mode Effects
 
@@ -83,6 +170,86 @@ The energy-over-time plot provided further insight: explorer and reactive agents
 ![Energy Budget Impact](results/p3_energy_budget.png)
 
 *Figure 10: Impact of starting energy budget on the Hierarchical controller's performance. The controller achieves 100% goal rate and collects all 3 resources regardless of whether it starts with 30, 50, 75, or 100 energy units. This confirms that the hierarchical strategy's energy management is efficient enough to operate even under tight energy constraints, thanks to its ability to restore energy through resource collection and switch to survival mode when reserves run low.*
+
+3.4 Supplementary tables and experiment index
+
+**Noise sensitivity (goal reached rate, %).** Fifty episodes per cell; same controller instances and grid as Figures 7–8.
+
+| Controller | Noise 0% | Noise 10% | Noise 20% | Noise 30% |
+|------------|----------|-----------|-----------|-----------|
+| Explorer | 14% | 8% | 4% | 8% |
+| Reactive | 28% | 20% | 32% | 26% |
+| Deliberative | 100% | 100% | 100% | 100% |
+| Hierarchical | 100% | 100% | 100% | 100% |
+
+**Energy budget (Hierarchical controller).** Fifty episodes per row; noise 10%.
+
+| Starting energy | Goal rate | Avg resources collected | Survived |
+|-----------------|-----------|---------------------------|----------|
+| 30 | 100% | 3.0 | 100% |
+| 50 | 100% | 3.0 | 100% |
+| 75 | 100% | 3.0 | 100% |
+| 100 | 100% | 3.0 | 100% |
+
+**Experiment → artifact file (all under `results/`, 50 episodes unless noted).**
+
+| ID | Description | PNG file(s) |
+|----|-------------|-------------|
+| E1 | Boundary modes (wall / bouncy / wrap), 5x5 | `p1_coverage_by_boundary.png` |
+| E1 supp. | Coverage vs step by boundary mode | `p1_coverage_over_time.png` |
+| E2 | Grid size 5x5 vs 6x4 | `p1_grid_size_comparison.png` |
+| E3 | Reactive vs Memory vs MST | `p2_agent_comparison.png`, `p2_revisit_ratio.png` |
+| E4 | Obstacle count (MemoryAgent) | `p2_obstacle_impact.png` |
+| E5 | Four controllers, noise 10% | `p3_controller_comparison.png` |
+| E5 supp. | Mean energy vs step by controller | `p3_energy_over_time.png` |
+| E6 | Noise sweep by controller | `p3_noise_sensitivity.png` |
+| E7 | Starting energy (Hierarchical) | `p3_energy_budget.png` |
+
+**Other report artifacts:** Figures **1–10** in this document reference the PNG paths above. **`index.html`** provides the same figures with extended captions; **`results.html`** aggregates path traces and embedded plots for offline viewing.
+
+3.5 Aggregated numerical results (50 episodes per cell)
+
+The following tables reproduce the summary statistics emitted by `experiments.ExperimentRunner` (base seed 42, episode offset per run). Values are means; coverage and revisit rate are expressed as percentages of traversable cells or of steps, respectively.
+
+**E1 — Boundary modes (5x5, ReactiveAgent, max 200 steps).**
+
+| Mode | Coverage (mean ± std) | Goal reached | Resources (mean ± std) |
+|------|------------------------|--------------|-------------------------|
+| wall | 78.7 ± 11.4% | 72.0% | 2.08 ± 0.70 |
+| bouncy | 75.5 ± 13.6% | 62.0% | 1.70 ± 0.93 |
+| wrap | 45.6 ± 26.8% | 100.0% | 1.58 ± 0.70 |
+
+**E2 — Grid size (ReactiveAgent, wall boundary, max 200 steps).**
+
+| Grid | Coverage (mean ± std) | Goal reached |
+|------|------------------------|--------------|
+| 5x5 | 78.7 ± 11.4% | 72.0% |
+| 6x4 | 81.3 ± 14.7% | 92.0% |
+
+**E3 — Agent type (5x5, wall, max 300 steps).**
+
+| Agent | Coverage (mean ± std) | Goal reached | Resources (mean ± std) | Steps (mean ± std) | Revisit ratio (mean ± std) |
+|-------|------------------------|--------------|------------------------|--------------------|----------------------------|
+| Reactive | 80.1 ± 11.8% | 84.0% | 2.16 ± 0.68 | 139.2 ± 98.2 | 80.6 ± 16.1% |
+| Memory | 69.9 ± 16.6% | 100.0% | 1.94 ± 0.65 | 16.1 ± 6.0 | 15.6 ± 12.2% |
+| MST | 55.0 ± 0.0% | 100.0% | 2.00 ± 0.00 | 12.0 ± 0.0 | 16.7 ± 0.0% |
+
+**E4 — Movable obstacles (MemoryAgent, 5x5, wall, max 300 steps).**
+
+| Obstacles placed | Coverage (mean ± std) | Goal reached | Steps (mean ± std) | Obstacles pushed (mean ± std) |
+|------------------|------------------------|--------------|--------------------|--------------------------------|
+| 0 | 69.9 ± 16.9% | 100.0% | 16.1 ± 6.0 | 0.00 ± 0.00 |
+| 2 | 42.9 ± 19.2% | 18.0% | 248.4 ± 111.3 | 0.58 ± 0.76 |
+| 4 | 30.8 ± 17.1% | 8.0% | 277.2 ± 78.1 | 0.60 ± 0.76 |
+
+**E5 — Controllers (HierarchicalAgent, noise 10%, energy 50, max 500 steps).**
+
+| Controller | Goal reached | Resources (mean ± std) | Total reward (mean ± std) | Steps (mean ± std) |
+|------------|--------------|------------------------|---------------------------|--------------------|
+| Explorer | 8.0% | 0.60 ± 0.57 | 10.0 ± 16.5 | 54.4 ± 6.6 |
+| Reactive | 20.0% | 0.94 ± 0.68 | 19.4 ± 25.5 | 53.5 ± 8.9 |
+| Deliberative | 100.0% | 1.00 ± 0.00 | 60.0 ± 0.0 | 9.2 ± 1.9 |
+| Hierarchical | 100.0% | 3.00 ± 0.00 | 80.0 ± 0.0 | 25.6 ± 5.7 |
 
 4. Discussion
 
