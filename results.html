@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Path traces — Agent navigation results</title>
+    <title>Experimental results — plots &amp; path traces</title>
     <style>
         :root {
             --bg: #0f1117;
@@ -18,12 +18,26 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            max-width: 900px;
+            max-width: 920px;
             margin: 0 auto;
             padding: 2rem 1.25rem 4rem;
         }
+        .subnav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            margin: 1.25rem 0 2rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .subnav a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .subnav a:hover { text-decoration: underline; }
         h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
-        .lede { color: var(--muted); margin-bottom: 2rem; }
+        .lede { color: var(--muted); margin-bottom: 1.5rem; }
         .legend {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -37,6 +51,11 @@
             font-size: 1.2rem;
             margin: 2.5rem 0 1rem;
             color: var(--accent);
+        }
+        .h3-sub {
+            font-size: 1.05rem;
+            margin: 1.75rem 0 0.5rem;
+            color: var(--text);
         }
         .meta {
             color: var(--muted);
@@ -60,6 +79,31 @@
             font-family: ui-monospace, 'Cascadia Code', monospace;
             white-space: pre;
         }
+        .plot-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .plot-card h3 { font-size: 1rem; margin: 0 0 0.75rem; font-weight: 600; }
+        .plot-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+        .plot-cap {
+            margin: 0.75rem 0 0;
+            font-size: 0.88rem;
+            color: var(--muted);
+        }
+        .plot-card code {
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
         .nav-foot {
             margin-top: 3rem;
             padding-top: 1.5rem;
@@ -71,13 +115,22 @@
     </style>
 </head>
 <body>
-    <h1>Agent path traces</h1>
-    <p class="lede">ASCII grid snapshots and step-by-step movement output
-        (same style as the project discussion examples). Regenerated when you
-        run <code style="background:var(--surface);padding:2px 8px;border-radius:4px;">python3 main.py</code>.</p>
+    <h1>Experimental results</h1>
+    <p class="lede">All figures under <code>results/</code>, path traces, and README cross-references in one page. Regenerated when you run <code>python3 main.py</code> (see <code>path_traces.py</code>).</p>
+    <nav class="subnav" aria-label="On this page">
+        <a href="#path-traces">Path traces</a>
+        <a href="#phase1-plots">Phase 1 plots</a>
+        <a href="#phase2-plots">Phase 2 plots</a>
+        <a href="#phase3-plots">Phase 3 plots</a>
+        <a href="index.html">index.html report</a>
+    </nav>
+
+    
+    <h2 id="path-traces">Path traces (README §2.2 / §3.0)</h2>
+    <p class="meta">ASCII grids and <strong>Step N: Move NORTH|SOUTH|EAST|WEST</strong> logs. Reactive baseline vs Deliberative (BFS) controller. Ties to agent types described in the README.</p>
     <div class="legend">Legend:  . = empty   # = wall   A = agent   G = goal   R = resource   O = movable obstacle</div>
 
-    <h2>1. Goal-directed path (DeliberativeController)</h2>
+    <h3 class="h3-sub">1. Goal-directed path (DeliberativeController)</h3>
     <p class="meta">DeliberativeController, deterministic (noise=0), seed=42. Steps: 8, goal_reached=True.</p>
     <div class="trace-block"><h3>Initial grid</h3><pre class="trace-pre">A . # . R
 . . . # .
@@ -98,7 +151,7 @@ Step 8: Move SOUTH</pre></div>
 . . . # .
 R . # . A</pre></div>
 
-    <h2>2. Reactive exploration sample (first 15 steps)</h2>
+    <h3 class="h3-sub">2. Reactive exploration (first 15 steps)</h3>
     <p class="meta">ReactiveAgent, first 15 steps, seed=42. goal_reached=False.</p>
     <div class="trace-block"><h3>Initial grid</h3><pre class="trace-pre">A . # . R
 . . . # .
@@ -126,8 +179,25 @@ Step 15: Move SOUTH</pre></div>
 . . . # R
 R . # . G</pre></div>
 
+
+    <hr style="border: none; border-top: 1px solid var(--border); margin: 3rem 0;">
+
+    <h2 id="phase1-plots">Phase 1 plots (README §2.1 Environment — boundaries &amp; grid sizes)</h2><p class="meta">Wall, bouncy, and wrap boundary modes on 5x5; 5x5 vs 6x4 comparison (ReactiveAgent). Same content as README §3.1 narrative.</p>
+<div class="plot-card"><h3>Coverage by boundary mode (E1)</h3><img src="results/p1_coverage_by_boundary.png" alt="Coverage by boundary mode (E1)" loading="lazy"><p class="plot-cap">Mean coverage with error bars across 50 episodes per boundary mode. File: <code>p1_coverage_by_boundary.png</code></p></div>
+<div class="plot-card"><h3>Coverage over time (E1 supplement)</h3><img src="results/p1_coverage_over_time.png" alt="Coverage over time (E1 supplement)" loading="lazy"><p class="plot-cap">Average coverage at each step for wall, bouncy, and wrap. File: <code>p1_coverage_over_time.png</code></p></div>
+<div class="plot-card"><h3>Performance by grid size (E2)</h3><img src="results/p1_grid_size_comparison.png" alt="Performance by grid size (E2)" loading="lazy"><p class="plot-cap">5x5 vs 6x4: coverage and goal-reached rate. File: <code>p1_grid_size_comparison.png</code></p></div>
+<h2 id="phase2-plots">Phase 2 plots (README §2.2 — Reactive, Memory, MST &amp; obstacles)</h2><p class="meta">Agent comparison (E3), revisit ratio (E3), obstacle impact with MemoryAgent (E4). Aligns with README §3.2.</p>
+<div class="plot-card"><h3>Resources &amp; goal rate by agent (E3)</h3><img src="results/p2_agent_comparison.png" alt="Resources &amp;amp; goal rate by agent (E3)" loading="lazy"><p class="plot-cap">Reactive vs Memory vs MST: resources collected and goal-reached rate. File: <code>p2_agent_comparison.png</code></p></div>
+<div class="plot-card"><h3>Revisit ratio by agent (E3)</h3><img src="results/p2_revisit_ratio.png" alt="Revisit ratio by agent (E3)" loading="lazy"><p class="plot-cap">Share of steps revisiting an already-visited cell. File: <code>p2_revisit_ratio.png</code></p></div>
+<div class="plot-card"><h3>Obstacle impact (E4)</h3><img src="results/p2_obstacle_impact.png" alt="Obstacle impact (E4)" loading="lazy"><p class="plot-cap">MemoryAgent with 0 / 2 / 4 movable obstacles: steps and goal rate. File: <code>p2_obstacle_impact.png</code></p></div>
+<h2 id="phase3-plots">Phase 3 plots (README §2.2 — controllers, noise, energy)</h2><p class="meta">Four controllers (E5), energy over time (supplement), noise sensitivity (E6), energy budget (E7). Aligns with README §3.3.</p>
+<div class="plot-card"><h3>Controller comparison (E5, noise=0.1)</h3><img src="results/p3_controller_comparison.png" alt="Controller comparison (E5, noise=0.1)" loading="lazy"><p class="plot-cap">Goal rate, resources collected, total reward. File: <code>p3_controller_comparison.png</code></p></div>
+<div class="plot-card"><h3>Noise sensitivity (E6)</h3><img src="results/p3_noise_sensitivity.png" alt="Noise sensitivity (E6)" loading="lazy"><p class="plot-cap">Goal-reached rate vs noise level for each controller. File: <code>p3_noise_sensitivity.png</code></p></div>
+<div class="plot-card"><h3>Energy over time (E5 supplement)</h3><img src="results/p3_energy_over_time.png" alt="Energy over time (E5 supplement)" loading="lazy"><p class="plot-cap">Average energy remaining per step by controller type. File: <code>p3_energy_over_time.png</code></p></div>
+<div class="plot-card"><h3>Energy budget impact (E7)</h3><img src="results/p3_energy_budget.png" alt="Energy budget impact (E7)" loading="lazy"><p class="plot-cap">Hierarchical controller with varying starting energy. File: <code>p3_energy_budget.png</code></p></div>
+
     <div class="nav-foot">
-        <p>Plots and figures: see <a href="index.html">index.html</a> (full report) and the <code>results/</code> directory for PNG exports.</p>
+        <p>Narrative write-up: <a href="README.md">README.md</a> (view on GitHub). Extended figures with discussion: <a href="index.html">index.html</a>.</p>
     </div>
 </body>
 </html>
