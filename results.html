@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path traces — Agent navigation results</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --border: #2e3348;
+            --text: #e2e4ed;
+            --muted: #8b8fa8;
+            --accent: #6c8cff;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 4rem;
+        }
+        h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .lede { color: var(--muted); margin-bottom: 2rem; }
+        .legend {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin: 2.5rem 0 1rem;
+            color: var(--accent);
+        }
+        .meta {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .trace-block { margin-bottom: 1.5rem; }
+        .trace-block h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .trace-pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            font-family: ui-monospace, 'Cascadia Code', monospace;
+            white-space: pre;
+        }
+        .nav-foot {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        .nav-foot a { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <h1>Agent path traces</h1>
+    <p class="lede">ASCII grid snapshots and step-by-step movement output
+        (same style as the project discussion examples). Regenerated when you
+        run <code style="background:var(--surface);padding:2px 8px;border-radius:4px;">python3 main.py</code>.</p>
+    <div class="legend">Legend:  . = empty   # = wall   A = agent   G = goal   R = resource   O = movable obstacle</div>
+
+    <h2>1. Goal-directed path (DeliberativeController)</h2>
+    <p class="meta">DeliberativeController, deterministic (noise=0), seed=42. Steps: 8, goal_reached=True.</p>
+    <div class="trace-block"><h3>Initial grid</h3><pre class="trace-pre">A . # . R
+. . . # .
+. # . . .
+. . . # R
+R . # . G</pre></div>
+    <div class="trace-block"><h3>Step-by-step movement</h3><pre class="trace-pre">Step 1: Move SOUTH
+Step 2: Move EAST
+Step 3: Move EAST
+Step 4: Move SOUTH
+Step 5: Move EAST
+Step 6: Move EAST
+Step 7: Move SOUTH
+Step 8: Move SOUTH</pre></div>
+    <div class="trace-block"><h3>Final grid</h3><pre class="trace-pre">. . # . R
+. . . # .
+. # . . .
+. . . # .
+R . # . A</pre></div>
+
+    <h2>2. Reactive exploration sample (first 15 steps)</h2>
+    <p class="meta">ReactiveAgent, first 15 steps, seed=42. goal_reached=False.</p>
+    <div class="trace-block"><h3>Initial grid</h3><pre class="trace-pre">A . # . R
+. . . # .
+. # . . .
+. . . # R
+R . # . G</pre></div>
+    <div class="trace-block"><h3>Step-by-step movement</h3><pre class="trace-pre">Step 1: Move SOUTH
+Step 2: Move NORTH
+Step 3: Move EAST
+Step 4: Move SOUTH
+Step 5: Move NORTH
+Step 6: Move SOUTH
+Step 7: Move EAST
+Step 8: Move SOUTH
+Step 9: Move EAST
+Step 10: Move WEST
+Step 11: Move EAST
+Step 12: Move EAST
+Step 13: Move NORTH
+Step 14: Move NORTH
+Step 15: Move SOUTH</pre></div>
+    <div class="trace-block"><h3>Final grid</h3><pre class="trace-pre">. . # . .
+. . . # A
+. # . . .
+. . . # R
+R . # . G</pre></div>
+
+    <div class="nav-foot">
+        <p>Plots and figures: see <a href="index.html">index.html</a> (full report) and the <code>results/</code> directory for PNG exports.</p>
+    </div>
+</body>
+</html>

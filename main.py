@@ -12,6 +12,7 @@ Usage:
 Output:
     Terminal: Grid visualizations, experiment summaries
     results/: PNG plots for each experiment
+    results.html: ASCII grids and step-by-step move logs (path traces)
 """
 
 import os
@@ -23,6 +24,7 @@ from agent import ReactiveAgent, MemoryAgent, HierarchicalAgent
 from mst import MSTAgent
 from controllers import HierarchicalController
 from experiments import ExperimentRunner
+from path_traces import write_path_results_page
 from visualizer import (
     print_grid, ensure_results_dir,
     plot_coverage_by_boundary_mode, plot_coverage_over_time,
@@ -283,6 +285,8 @@ def main():
             if f.endswith('.png'):
                 print(f'  - {f}')
     print(f'\nAll results saved to {results_dir}/')
+    write_path_results_page()
+    print('\nPath trace page: results.html')
     print('Experiment run complete.')
 
 

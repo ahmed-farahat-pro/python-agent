@@ -24,6 +24,31 @@ Each experimental condition was repeated 50 times with deterministic seeding to 
 
 3. Results
 
+3.0 Agent path trace (presentation format)
+
+In addition to aggregate metrics and plots, results include an ASCII grid view of the environment and a chronological move log for discussion, in the form ``Step N: Move NORTH`` (or SOUTH, EAST, WEST). Running ``python3 main.py`` refreshes ``results.html`` in the project root with two illustrative runs: a goal-directed path using the DeliberativeController (no action noise) and a short reactive random walk. The symbol legend matches the grid layouts in code: period for empty floor, hash for walls, A for the agent, G for the goal when the agent is not standing on it, R for resources, and O for movable obstacles.
+
+Example (5x5 layout from ``config.GRID_5x5``, DeliberativeController, seed 42, eight steps to the goal): initial grid:
+
+    A . # . R
+    . . . # .
+    . # . . .
+    . . . # R
+    R . # . G
+
+Step-by-step movement:
+
+    Step 1: Move SOUTH
+    Step 2: Move EAST
+    Step 3: Move EAST
+    Step 4: Move SOUTH
+    Step 5: Move EAST
+    Step 6: Move EAST
+    Step 7: Move SOUTH
+    Step 8: Move SOUTH
+
+After the episode the agent occupies the goal cell; the rendered grid shows ``A`` in that cell because the environment represents the agent overlay on the former goal location.
+
 3.1 Phase 1: Boundary Mode Effects
 
 On the five-by-five grid, the wall-bounded agent obtained a mean coverage of 78.7 percent with a goal-reached rate of 72 percent. Bouncy boundaries produced slightly lower coverage at 75.5 percent and a 62 percent goal rate because the reflection sometimes pushed the agent away from productive directions. Wrap-around yielded only 45.6 percent coverage but, counterintuitively, a 100 percent goal-reached rate: the toroidal topology created shortcuts that let the random walker stumble onto the goal quickly, even though it explored fewer unique cells. Comparing grid sizes, the six-by-four layout produced a higher goal rate of 92 percent versus 72 percent for five-by-five, likely because the rectangular shape offers fewer dead-end corridors.
